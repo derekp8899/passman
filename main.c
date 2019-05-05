@@ -6,7 +6,8 @@ author : Rubberspoon
 
 written in C with ncurses interface
 
-local user account password stored as SHA-3 hashes
+local user account password stored as SHA2-512 hashes, future possible upgrade to SHA-3
+
 managed passwords will be encrypted with a still TBD algorithm (AES?) will be able to type the password or randomize one
 no plaintext stored on the disk 
 
@@ -17,6 +18,8 @@ no plaintext stored on the disk
 #include <curses.h>
 #include <unistd.h>
 #include <string.h>
+#include <openssl/sha.h>
+
 
 //maybe pthread the crypts/decrypts?
 /*******************
@@ -43,6 +46,20 @@ char* genRandom(char *dest, int size){
 
 }
 
+//generates the SHA2-512 hash for login checks
+char* genLoginHash(char *inPass, char* loginHash){
+
+  printf("%s",inPass);//verify the input
+  
+}
+
+//to verify the login
+int verifyLogin(char *inPassHash, char *loginHash){
+
+
+
+}
+
 int main(){
 
   //open the files we need dont check since we will just create if they are not there
@@ -50,21 +67,61 @@ int main(){
   FILE *loginFp = fopen("passman","a+");
 
   // -TODO- add in support for multi users, for now we are assuming a single user per install
+  //malloc the input buffers for the login process
+  
   char **login = (char**)malloc(sizeof(char*));
   *login = (char*)malloc(sizeof(char)*(1024)+1);//allow for user and password has to be 512 chars each +1 for separator
   char *user = malloc(sizeof(char)*512);//to store the username
   char *uPHash = malloc(sizeof(char)*512);//to store the username password hash
+  char *passInTemp = malloc(sizeof(char)*512);
+  
+  //define the buffer sizes for the getlines and buffer operations
+  
   size_t userSize = 1025;
+  size_t passSize = 512;
 
-  //grab the user name and hash, and split, it is saved in the format user:hash
-  getline(login,&userSize,loginFp);
+  //grab the user name and hash from the login hash file, and split, it is saved in the format user:hash
+  if(getline(login,&userSize,loginFp)){
+
+  }
   user =strtok(*login,":");
   uPHash = strtok(NULL, "\n");
   
   printf("%s %s\n",user,uPHash);
+  printf("Please Enter your password: ");
+  
+  //grab the password form input
+  int inPassSize = getline(&passInTemp,&passSize,stdin);
+  //remove trailing newline
+  char *passIn = strtok(passInTemp,"\n");
+  //  passIn[sizeof(passIn)-1]='\0';
+  //  printf("you entered: %s\n",passIn);
+  printf("your hash: ");
+  unsigned char inPassHash[SHA512_DIGEST_LENGTH];
+  SHA512(passIn, inPassSize-1, inPassHash);
+  char *inHashBuffer = (char*)malloc(sizeof(char)*128*2);
+  for(int i = 0; i < SHA512_DIGEST_LENGTH; ++i) {
+    printf("%02x", inPassHash[i]);
+    sprintf(&(inHashBuffer[i*2]),"%02x",inPassHash[i]);
+  }
+  printf("\n");
+  printf("printing inHashBuffer: %s\n", inHashBuffer);
 
-  sleep(1);
+  //test if the password hashes match
+  for (int i = 0; i < SHA512_DIGEST_LENGTH;++i){
+    if(inHashBuffer[i]!=uPHash[i]){
+      printf("Password incorrect! TRY AGAIN\n- EXITING -\n");
+      exit(0);
+    }
+  }
+  printf("LOGIN SUCCESSFUL\nLogged in as: %s\n",user);
+ 
+  sleep(4);
   /* start the window */
+
+
+  /*----------------------------------- debugging test bed for now --------------- */
+  /*
   initscr();
   refresh();
   
@@ -108,8 +165,8 @@ int main(){
  
   
   /* end the window */
-  endwin();
-
+  //endwin();
+  /*
   //free all buffers
   free(*(login));
   free(login);
@@ -119,7 +176,7 @@ int main(){
   for(int j = 0;j<i;j++)
     free(keyBuffs[j]);
   free(keyBuffs);
-  
+  */
   /* exit program no error */
   exit(0);
 
