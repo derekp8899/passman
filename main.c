@@ -23,6 +23,16 @@ no plaintext stored on the disk
 #include <pthread.h>
 *******************/
 
+//to create a new user
+void createUser(){
+
+}
+
+//to set the new user password
+void writeUserPass(){
+
+}
+
 int main(){
 
   //open the files we need dont check since we will just create if they are not there
