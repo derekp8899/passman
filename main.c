@@ -6,8 +6,8 @@ author : Rubberspoon
 
 written in C with ncurses interface
 
-local user account stored as SHA-3 hashes
-managed passwords will be encrypted with a still TBD algorithm will be able to type the password or randomize one
+local user account password stored as SHA-3 hashes
+managed passwords will be encrypted with a still TBD algorithm (AES?) will be able to type the password or randomize one
 no plaintext stored on the disk 
 
 */
@@ -23,6 +23,9 @@ no plaintext stored on the disk
 #include <pthread.h>
 *******************/
 
+//defaults
+#define RAND_DEFAULT 25 //default length for random password generation
+
 //to create a new user
 void createUser(){
 
@@ -30,6 +33,13 @@ void createUser(){
 
 //to set the new user password
 void writeUserPass(){
+
+}
+
+// generates a ranomized password of specified SIZE default is 25 characters
+
+char* genRandom(char *dest, int size){
+
 
 }
 
@@ -53,7 +63,7 @@ int main(){
   
   printf("%s %s\n",user,uPHash);
 
-  sleep(2);
+  sleep(1);
   /* start the window */
   initscr();
   refresh();
@@ -65,28 +75,52 @@ int main(){
   
   //init the key hash buffers
   for(i = 0; i < 100; ++i)
-    keyBuffs[i]=(char*)malloc(sizeof(char)*512);
+    keyBuffs[i]=(char*)malloc(sizeof(char)*512*2);//to store up to 512 chars for the pass word and 512 for id(name asigned at creation)
   size_t strSize = 513;
 
-  i = 0;
+  //pointers for the passwd and ids
+  char **pwdIds = (char**)malloc(sizeof(char*)*100);
+  for(int j = 0; j < 100; ++j)
+    pwdIds[j]=(char*)malloc(sizeof(char)*512);//each id can be up to 512 chars long
 
+  char **passwd = (char**)malloc(sizeof(char*)*100);
+  for(int j = 0; j < 100; ++j)
+    passwd[j]=(char*)malloc(sizeof(char)*512);//each password is max of 512 chars long
+  
+  
+  i = 0;
+  
   while(getline(&(keyBuffs[i]),&strSize,passmanKeys)!=-1 && i < 100){  
 
-    printw("%s",keyBuffs[i]);
-    
-    //refresh();
-    //sleep(1);
+    passwd[i] = strtok(keyBuffs[i],":");
+    pwdIds[i] = strtok(NULL,"\n");
+
+    printw("%s %s\n",passwd[i],pwdIds[i]);
+    refresh();
+    sleep(1);
     ++i;
   }
   printw("%d",i);
   refresh();
-  sleep(2);
+  //  sleep(2);
   
 
  
   
   /* end the window */
   endwin();
+
+  //free all buffers
+  free(*(login));
+  free(login);
+  //-TODO- why these are invalid pointers?
+  //free(uPHash);
+  //free(user);
+  for(int j = 0;j<i;j++)
+    free(keyBuffs[j]);
+  free(keyBuffs);
+  
+  /* exit program no error */
   exit(0);
 
 }
