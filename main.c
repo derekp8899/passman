@@ -31,11 +31,27 @@ no plaintext stored on the disk
 
 //to create a new user
 void createUser(){
+  
+    FILE *loginFp = fopen("passman","a+");
+    char *userTemp=malloc(sizeof(char)*512);
+    char *passTemp=malloc(sizeof(char)*512);
+    char *hashTemp=malloc(sizeof(char)*128*2);
+    
+    printf("You Need to create a user\n");
+    printf("Input a user name(max 512 characters)\n");
+    
+    printf("You need to create a master password\nMAKE THIS PASSWORD STRONG\nTHIS PASSWORD WILL BE STORED ON THE MACHINE AS A SHA2-512 HASH\n");
+    printf("I suggest a password of at least 16 characters(max support by this application is 512)\n");
+    printf("Input a password\n");
 
+    free(userTemp);free(passTemp);free(hashTemp);
+    
 }
 
 //to set the new user password
-void writeUserPass(){
+void writeUserPass(FILE *passmanFP, char *userTemp, char* passTemp){
+
+  
 
 }
 
@@ -74,47 +90,86 @@ int main(){
   char *user = malloc(sizeof(char)*512);//to store the username
   char *uPHash = malloc(sizeof(char)*512);//to store the username password hash
   char *passInTemp = malloc(sizeof(char)*512);
+  char *inHashBuffer = (char*)malloc(sizeof(char)*128*2);
   
   //define the buffer sizes for the getlines and buffer operations
   
   size_t userSize = 1025;
   size_t passSize = 512;
 
+  //init the screen window
+  initscr();
+  refresh();
+  
   //grab the user name and hash from the login hash file, and split, it is saved in the format user:hash
-  if(getline(login,&userSize,loginFp)){
+  if(getline(login,&userSize,loginFp)){//if the login data already exists in passman file
+
+      user =strtok(*login,":");
+      uPHash = strtok(NULL, "\n");
+    
+  }
+  else//else we need to create the use login
+    createUser();
+  //debug prints for file io and string split
+  printw("%s %s\n",user,uPHash);
+
+  //prompt password
+  printw("Please Enter your password: ");
+  refresh();
+
+  //here we grab the password from input
+  char keyIn='\0';
+  //turn off input echo
+  noecho();
+  
+  keyIn = getch();
+  int index = 0;
+
+  while(1){
+    if(keyIn == '\n')
+      break;
+    passInTemp[index]=keyIn;
+    keyIn=getch();
+    index++;
 
   }
-  user =strtok(*login,":");
-  uPHash = strtok(NULL, "\n");
-  
-  printf("%s %s\n",user,uPHash);
-  printf("Please Enter your password: ");
-  
-  //grab the password form input
-  int inPassSize = getline(&passInTemp,&passSize,stdin);
+  index++;
+  passInTemp[index]='\n';
+  printw("you entered the password: ");
+  printw("%s\n",passInTemp);
+
+  int inPassSize = index;
   //remove trailing newline
+  //  char *passIn = "testdata\n";
   char *passIn = strtok(passInTemp,"\n");
-  //  passIn[sizeof(passIn)-1]='\0';
-  //  printf("you entered: %s\n",passIn);
-  printf("your hash: ");
+  //hash the input and store in the buffer, for now debug print the hash to the screen
+  printw("your hash: ");
+  //opensll stores them as unsigned chars
   unsigned char inPassHash[SHA512_DIGEST_LENGTH];
   SHA512(passIn, inPassSize-1, inPassHash);
-  char *inHashBuffer = (char*)malloc(sizeof(char)*128*2);
+ 
+  //convert from the hexdigest to printable chars
   for(int i = 0; i < SHA512_DIGEST_LENGTH; ++i) {
-    printf("%02x", inPassHash[i]);
+    printw("%02x", inPassHash[i]);
     sprintf(&(inHashBuffer[i*2]),"%02x",inPassHash[i]);
   }
-  printf("\n");
-  printf("printing inHashBuffer: %s\n", inHashBuffer);
-
+  refresh();
+  
+  //debug dump to term
+  printw("\n");
+  printw("printing inHashBuffer: %s\n", inHashBuffer);
+  refresh();
   //test if the password hashes match
   for (int i = 0; i < SHA512_DIGEST_LENGTH;++i){
     if(inHashBuffer[i]!=uPHash[i]){
-      printf("Password incorrect! TRY AGAIN\n- EXITING -\n");
+      printw("Password incorrect! TRY AGAIN\n- EXITING -\n");
+      refresh();
       exit(0);
     }
   }
-  printf("LOGIN SUCCESSFUL\nLogged in as: %s\n",user);
+  printw("LOGIN SUCCESSFUL\nLogged in as: %s\n",user);
+  refresh();
+  free(passInTemp);//no longer need temp pass storage
  
   sleep(4);
   /* start the window */
