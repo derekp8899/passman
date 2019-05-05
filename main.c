@@ -108,8 +108,9 @@ int main(){
       uPHash = strtok(NULL, "\n");
     
   }
-  else//else we need to create the use login
+  else//else we need to create the user login
     createUser();
+  
   //debug prints for file io and string split
   printw("%s %s\n",user,uPHash);
 
@@ -172,15 +173,10 @@ int main(){
   free(passInTemp);//no longer need temp pass storage
  
   sleep(4);
-  /* start the window */
-
-
-  /*----------------------------------- debugging test bed for now --------------- */
-  /*
-  initscr();
-  refresh();
   
-    
+  /*----------------------------------- debugging test bed/logins for now --------------- */
+  /*
+      
   //support of up to 100 keys for now
   char **keyBuffs = (char**)malloc(sizeof(char*)*100);
   int i = 0;
@@ -232,7 +228,9 @@ int main(){
     free(keyBuffs[j]);
   free(keyBuffs);
   */
+  
   /* exit program no error */
+  endwin();
   exit(0);
 
 }
