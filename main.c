@@ -89,7 +89,7 @@ void createUser(){
       fprintf(passmanDB,"%02x", hashTemp[i]);
     }
     printf("\n");
-    free(userTemp);free(passTemp);free(hashTemp);
+    free(userTemp);free(passTemp);free(hashTemp);free(saltTemp);free(secTemp);
     fclose(passmanDB);
     fclose(passmanSalt);
     fclose(passmanSec);
@@ -131,8 +131,10 @@ char* genSecret(){
   printw("\n");
 
   refresh();
+  free(keyBuff);
   fclose(passmanKey);
   fclose(passmanSalt);
+  fclose(urand);
   sleep(5);
   
 }
