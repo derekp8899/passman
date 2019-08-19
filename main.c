@@ -214,7 +214,6 @@ int main(){
   FILE *saltFP = fopen("passman.salt","r");
   FILE *secFP = fopen("passman.sec","r");
 
-  //-TODO- add in support for multi users, for now we are assuming a single user per install
   //malloc the input buffers for the login process
   
   char **login = (char**)malloc(sizeof(char*));
@@ -237,6 +236,7 @@ int main(){
   //  refresh();
 
   //  genSecret();
+  // -TODO- if there is a db file prompt for master password and attempt decrypt verify the decrypt
   //grab the user name and hash from the login hash file, and split, it is saved in the format user:hash
   if(getline(login,&userSize,loginFp)!=-1){//if the login data already exists in passman file
 
@@ -246,7 +246,7 @@ int main(){
       getline(&passmanSalt,&hashSize,saltFP);
       
   }
-  else//else we need to create the user login
+  else//else we need to create the user login/passworddb file
     createUser();
   
   //debug prints for file io and string split
